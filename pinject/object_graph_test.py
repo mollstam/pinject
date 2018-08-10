@@ -323,6 +323,14 @@ class ObjectGraphProvideTest(unittest.TestCase):
         self.assertIsInstance(obj_graph.provide(ExampleClassWithoutInit),
                               ExampleClassWithoutInit)
 
+    def test_can_provide_class_from_binding_name(self):
+        class ExampleClass(object):
+            pass
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=[ExampleClass])
+        self.assertIsInstance(obj_graph.provide('example_class'),
+                              ExampleClass)
+
     def test_can_directly_provide_class_with_colliding_arg_name(self):
         class _CollidingExampleClass(object):
             pass
@@ -784,7 +792,7 @@ class ObjectGraphProvideTest(unittest.TestCase):
         self.assertRaises(errors.InjectingNoneDisallowedError,
                           obj_graph.provide, SomeClass)
 
-    def test_raises_exception_if_trying_to_provide_nonclass(self):
+    def test_raises_exception_if_trying_to_provide_invalid_arg(self):
         class SomeClass(object):
             pass
         obj_graph = object_graph.new_object_graph(
