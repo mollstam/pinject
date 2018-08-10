@@ -231,6 +231,12 @@ class ObjectGraph(object):
         Raises:
           Error: an instance of cls is not providable
         """
+        if (type(cls) == str):
+          injection_site = lambda: None
+          injection_context = injection_contexts.InjectionContextFactory(
+              lambda _1, _2: True).new(lambda: None)
+          return self._obj_provider.provide_from_arg_binding_key(
+              injection_site, arg_binding_keys.new(cls), injection_context)
         _verify_type(cls, types.TypeType, 'cls')
         if not self._is_injectable_fn(cls):
             provide_loc = locations.get_back_frame_loc()
