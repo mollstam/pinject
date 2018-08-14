@@ -4,6 +4,41 @@
 
 Pinject is a dependency injection library for python.
 
+Changes from Google fork
+========================
+
+This is a fork of the original pinject repo at https://github.com/google/pinject
+with a few changes which probably diverge from the original vision. Mainly how
+pinject's object graph acts as a DI container
+
+Extended singleton scope
+------------------------
+
+The `ObjectGraph.provide()` method now retains the singleton scope on an
+"object graph instance level" as opposed to the original "provide invocation level".
+
+This leads to the following behaviour:
+
+.. code-block:: python
+
+    >>> obj_graph = pinject.new_object_graph()
+    >>> instance_a = obj_graph.provide(OuterClass)
+    >>> instance_b = obj_graph.provide(OuterClass)
+    >>> print instance_a == instance_b
+    True
+    >>>
+
+Provide from binding name
+-------------------------
+
+Originally `ObjectGraph.provide(SomeClass)` is the only valid flavour
+(passing the class), but now you can also use `ObjectGraph.provide('some_class')`
+(passing the binding name) to get an instance, this plays nicely with the extended
+singleton scope mentioned above.
+
+Introduction
+============
+
 The primary goal of Pinject is to help you assemble objects into graphs in an
 easy, maintainable way.
 
