@@ -331,7 +331,7 @@ class ObjectGraphProvideTest(unittest.TestCase):
         self.assertIsInstance(obj_graph.provide('example_class'),
                               ExampleClass)
 
-    def test_can_directly_provide_class_with_colliding_arg_name(self):
+    def test_can_not_directly_provide_class_with_colliding_arg_name(self):
         class _CollidingExampleClass(object):
             pass
         class CollidingExampleClass(object):
@@ -339,8 +339,8 @@ class ObjectGraphProvideTest(unittest.TestCase):
         obj_graph = object_graph.new_object_graph(
             modules=None,
             classes=[_CollidingExampleClass, CollidingExampleClass])
-        self.assertIsInstance(obj_graph.provide(CollidingExampleClass),
-                              CollidingExampleClass)
+        self.assertRaises(errors.AmbiguousArgNameError,
+            obj_graph.provide, CollidingExampleClass)
 
     def test_can_provide_class_that_itself_requires_injection(self):
         class ClassOne(object):
@@ -450,8 +450,8 @@ class ObjectGraphProvideTest(unittest.TestCase):
             binding_specs=[SomeBindingSpec()])
         class_one = obj_graph.provide(SomeClass)
         class_two = obj_graph.provide(SomeClass)
-        self.assertIs(class_one.foo, class_two.foo)
-        self.assertIsNot(class_one.bar, class_two.bar)
+        self.assertIs(class_one, class_two)
+        # TODO(tobias): this test is a bit silly after my changes
 
     def test_singleton_classes_are_singletons_across_arg_names(self):
         class InjectedClass(object):
@@ -470,12 +470,41 @@ class ObjectGraphProvideTest(unittest.TestCase):
         some_class = obj_graph.provide(SomeClass)
         self.assertIs(some_class.foo, some_class.bar)
 
+    def test_singleton_classes_are_singletons_when_provided_from_class(self):
+        class SomeClass(object):
+            pass
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=[SomeClass])
+        self.assertIs(obj_graph.provide(SomeClass), obj_graph.provide(SomeClass))
+
     def test_singleton_classes_are_singletons_when_provided_from_binding_name(self):
-      class SomeClass(object):
-        pass
-      obj_graph = object_graph.new_object_graph(
-        modules=None, classes=[SomeClass])
-      self.assertIs(obj_graph.provide('some_class'), obj_graph.provide('some_class'))
+        class SomeClass(object):
+            pass
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=[SomeClass])
+        self.assertIs(obj_graph.provide('some_class'), obj_graph.provide('some_class'))
+
+    def test_singleton_classes_are_singletons_when_provided_differently(self):
+        class SomeClass(object):
+            pass
+        class SomeBindingSpec(bindings.BindingSpec):
+            def configure(self, bind):
+                bind('some_class', to_class=SomeClass, in_scope=scoping.SINGLETON)
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=None,
+            binding_specs=[SomeBindingSpec()])
+        self.assertIs(obj_graph.provide(SomeClass), obj_graph.provide('some_class'))
+
+    def test_raises_error_if_provide_from_class_cannot_be_resolved(self):
+        class SomeClass(object):
+            pass
+        class SomeBindingSpec(bindings.BindingSpec):
+            def configure(self, bind):
+                bind('foo', to_class=SomeClass)
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=None,
+            binding_specs=[SomeBindingSpec()])
+        self.assertRaises(errors.NothingInjectableForArgError, obj_graph.provide, SomeClass)
 
     def test_raises_error_if_only_binding_has_different_annotation(self):
         class ClassOne(object):
@@ -770,8 +799,7 @@ class ObjectGraphProvideTest(unittest.TestCase):
         obj_graph = object_graph.new_object_graph(
             modules=None, classes=[SomeClass],
             binding_specs=[SomeBindingSpec()])
-        self.assertRaises(errors.OnlyInstantiableViaProviderFunctionError,
-                          obj_graph.provide, SomeClass)
+        self.assertRaises(TypeError, obj_graph.provide, SomeClass)
 
     def test_can_inject_none_when_allowing_injecting_none(self):
         class SomeClass(object):

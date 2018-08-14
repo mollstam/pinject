@@ -166,7 +166,7 @@ def new_object_graph(
         binding_mapping, bindable_scopes, allow_injecting_none)
     return ObjectGraph(
         obj_provider, injection_context_factory, is_injectable_fn,
-        use_short_stack_traces)
+        use_short_stack_traces, get_arg_names_from_class_name)
 
 
 def _verify_type(elt, required_type, arg_name):
@@ -215,38 +215,37 @@ class ObjectGraph(object):
     """A graph of objects instantiable with dependency injection."""
 
     def __init__(self, obj_provider, injection_context_factory,
-                 is_injectable_fn, use_short_stack_traces):
+                 is_injectable_fn, use_short_stack_traces,
+                 get_arg_names_from_class_name):
         self._obj_provider = obj_provider
         self._injection_context_factory = injection_context_factory
         self._is_injectable_fn = is_injectable_fn
         self._use_short_stack_traces = use_short_stack_traces
+        self._get_arg_names_from_class_name = get_arg_names_from_class_name
 
     def provide(self, cls):
-        """Provides an instance of the given class.
+        """Provides an instance of the given class or binding key.
 
         Args:
-          cls: a class (not an instance)
+          cls: a class (MyClass) or a binding key ('my_class')
         Returns:
-          an instance of cls
+          an instance of resolved class
         Raises:
-          Error: an instance of cls is not providable
+          Error: an instance of resolved class is not providable
         """
+        binding_names = []
         if (type(cls) == str):
-          injection_site = lambda: None
-          injection_context = injection_contexts.InjectionContextFactory(
-              lambda _1, _2: True).new(lambda: None)
-          return self._obj_provider.provide_from_arg_binding_key(
-              injection_site, arg_binding_keys.new(cls), injection_context)
-        _verify_type(cls, types.TypeType, 'cls')
-        if not self._is_injectable_fn(cls):
-            provide_loc = locations.get_back_frame_loc()
-            raise errors.NonExplicitlyBoundClassError(provide_loc, cls)
-        try:
-            return self._obj_provider.provide_class(
-                cls, self._injection_context_factory.new(cls.__init__),
-                direct_init_pargs=[], direct_init_kwargs={})
-        except errors.Error as e:
-            if self._use_short_stack_traces:
-                raise e
-            else:
-                raise
+            binding_names = [cls]
+        else:
+            _verify_type(cls, types.TypeType, 'cls')
+            if not self._is_injectable_fn(cls):
+                provide_loc = locations.get_back_frame_loc()
+                raise errors.NonExplicitlyBoundClassError(provide_loc, cls)
+            binding_names = self._get_arg_names_from_class_name(cls.__name__)
+        for binding_name in binding_names:
+            injection_site = lambda: None
+            injection_context = injection_contexts.InjectionContextFactory(
+                lambda _1, _2: True).new(lambda: None)
+            return self._obj_provider.provide_from_arg_binding_key(
+                injection_site, arg_binding_keys.new(binding_name), injection_context)
+        raise errors.NothingInjectableForArgError(cls, 'in provide()')

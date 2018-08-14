@@ -48,15 +48,7 @@ class ObjectProvider(object):
                     binding.get_binding_target_desc_fn())
             return provided
         provider_indirection = arg_binding_key.provider_indirection
-        try:
-            provided = provider_indirection.StripIndirectionIfNeeded(Provide)
-        except TypeError:
-            # TODO(kurts): it feels like there may be other TypeErrors that
-            # occur.  Instead, decorators.get_injectable_arg_binding_keys()
-            # should probably do all appropriate validation?
-            raise errors.OnlyInstantiableViaProviderFunctionError(
-                injection_site_fn, arg_binding_key,
-                binding.get_binding_target_desc_fn())
+        provided = provider_indirection.StripIndirectionIfNeeded(Provide)
         return provided
 
     def provide_class(self, cls, injection_context,
