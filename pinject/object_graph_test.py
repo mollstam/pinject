@@ -470,6 +470,13 @@ class ObjectGraphProvideTest(unittest.TestCase):
         some_class = obj_graph.provide(SomeClass)
         self.assertIs(some_class.foo, some_class.bar)
 
+    def test_singleton_classes_are_singletons_when_provided_from_binding_name(self):
+      class SomeClass(object):
+        pass
+      obj_graph = object_graph.new_object_graph(
+        modules=None, classes=[SomeClass])
+      self.assertIs(obj_graph.provide('some_class'), obj_graph.provide('some_class'))
+
     def test_raises_error_if_only_binding_has_different_annotation(self):
         class ClassOne(object):
             @decorators.annotate_arg('foo', 'an-annotation')
