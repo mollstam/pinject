@@ -487,13 +487,20 @@ class ObjectGraphProvideTest(unittest.TestCase):
     def test_singleton_classes_are_singletons_when_provided_differently(self):
         class SomeClass(object):
             pass
+        class OuterClass(object):
+            def __init__(self, some_class):
+                self.some_class = some_class
         class SomeBindingSpec(bindings.BindingSpec):
             def configure(self, bind):
                 bind('some_class', to_class=SomeClass, in_scope=scoping.SINGLETON)
         obj_graph = object_graph.new_object_graph(
-            modules=None, classes=None,
+            modules=None, classes=[OuterClass],
             binding_specs=[SomeBindingSpec()])
-        self.assertIs(obj_graph.provide(SomeClass), obj_graph.provide('some_class'))
+        provide_from_class = obj_graph.provide(SomeClass)
+        provide_from_binding_name = obj_graph.provide('some_class')
+        provide_via_injection = obj_graph.provide(OuterClass).some_class
+        self.assertIs(provide_from_class, provide_from_binding_name)
+        self.assertIs(provide_from_class, provide_via_injection)
 
     def test_raises_error_if_provide_from_class_cannot_be_resolved(self):
         class SomeClass(object):
