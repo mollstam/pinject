@@ -44,7 +44,10 @@ def _get_explicit_or_default_modules(modules):
 
 def _find_classes_in_module(module):
     classes = set()
-    for member_name, member in inspect.getmembers(module):
-        if inspect.isclass(member) and not member_name == '__class__':
-            classes.add(member)
+    try:
+      for member_name, member in inspect.getmembers(module):
+          if inspect.isclass(member) and not member_name == '__class__':
+              classes.add(member)
+    except ImportError:
+      pass
     return classes
