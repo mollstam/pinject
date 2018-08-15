@@ -260,9 +260,6 @@ class Binder(object):
 
 
 def new_binding_to_class(binding_key, to_class, in_scope, get_binding_loc_fn):
-    if not issubclass(to_class, object):
-        raise errors.InvalidBindingTargetError(
-            get_binding_loc_fn(), binding_key, to_class, 'a subclass of object')
     if not inspect.isclass(to_class):
         raise errors.InvalidBindingTargetError(
             get_binding_loc_fn(), binding_key, to_class, 'class')

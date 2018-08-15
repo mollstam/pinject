@@ -181,6 +181,12 @@ class NewObjectGraphTest(unittest.TestCase):
         self.assertRaises(errors.WrongArgTypeError,
                           object_graph.new_object_graph, classes=42)
 
+    def test_raises_error_if_classes_contains_non_object_class(self):
+        class SomeClass:
+            pass
+        self.assertRaises(errors.WrongArgElementTypeError,
+                          object_graph.new_object_graph, classes=[SomeClass])
+
     def test_raises_exception_if_binding_specs_is_wrong_type(self):
         self.assertRaises(errors.WrongArgTypeError,
                           object_graph.new_object_graph, binding_specs=42)
@@ -322,6 +328,22 @@ class ObjectGraphProvideTest(unittest.TestCase):
             modules=None, classes=[ExampleClassWithoutInit])
         self.assertIsInstance(obj_graph.provide(ExampleClassWithoutInit),
                               ExampleClassWithoutInit)
+
+
+    def test_can_provide_class_that_requires_explicit_non_object_injection(self):
+        class ClassOne(object):
+            def __init__(self, class_two):
+                pass
+        class ClassTwo:
+            pass
+        class SomeBindingSpec(bindings.BindingSpec):
+            def configure(self, bind):
+                bind('class_two', to_class=ClassTwo)
+        obj_graph = object_graph.new_object_graph(
+            modules=None, classes=[ClassOne],
+            binding_specs=[SomeBindingSpec()])
+        self.assertIsInstance(obj_graph.provide(ClassOne), ClassOne)
+
 
     def test_can_provide_class_from_binding_name(self):
         class ExampleClass(object):

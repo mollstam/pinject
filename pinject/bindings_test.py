@@ -407,13 +407,6 @@ class BinderTest(unittest.TestCase):
                           self.binder.bind, 'unused-arg-name',
                           to_class='not-a-class')
 
-    def test_binding_to_non_object_subclass_raises_error(self):
-        class SomeClass:
-            pass
-        self.assertRaises(errors.InvalidBindingTargetError,
-                          self.binder.bind, 'unused-arg-name',
-                          to_class=SomeClass)
-
 
 class BindingSpecTest(unittest.TestCase):
 

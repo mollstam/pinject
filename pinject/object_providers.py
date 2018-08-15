@@ -53,7 +53,7 @@ class ObjectProvider(object):
 
     def provide_class(self, cls, injection_context,
                       direct_init_pargs, direct_init_kwargs):
-        if type(cls.__init__) is types.MethodType:
+        if hasattr(cls, '__init__') and type(cls.__init__) is types.MethodType:
             init_pargs, init_kwargs = self.get_injection_pargs_kwargs(
                 cls.__init__, injection_context,
                 direct_init_pargs, direct_init_kwargs)
