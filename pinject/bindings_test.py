@@ -143,10 +143,11 @@ class GetOverallBindingKeyToBindingMapsTest(unittest.TestCase):
             binding_key_to_binding={self.some_binding_key: self.some_binding},
             collided_binding_key_to_bindings={})
 
-    def test_colliding_highest_priority_bindings_raises_error(self):
-        self.assertBindingsListsRaise(
+    def test_colliding_highest_priority_bindings_keeps_first(self):
+        self.assertBindingsListsReturnMaps(
             bindings_lists=[[self.some_binding, self.another_some_binding]],
-            error_type=errors.ConflictingExplicitBindingsError)
+            binding_key_to_binding={self.some_binding_key: self.some_binding},
+            collided_binding_key_to_bindings={})
 
 
 class BindingMappingTest(unittest.TestCase):

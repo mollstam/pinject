@@ -47,9 +47,7 @@ class Binding(object):
 
 def _handle_explicit_binding_collision(
         colliding_binding, binding_key_to_binding, *pargs):
-    other_binding = binding_key_to_binding[colliding_binding.binding_key]
-    raise errors.ConflictingExplicitBindingsError(
-        [colliding_binding, other_binding])
+    return True
 
 
 def _handle_implicit_binding_collision(
@@ -68,9 +66,10 @@ def _get_binding_key_to_binding_maps(bindings, handle_binding_collision_fn):
     for binding_ in bindings:
         binding_key = binding_.binding_key
         if binding_key in binding_key_to_binding:
-            handle_binding_collision_fn(
-                binding_, binding_key_to_binding,
-                collided_binding_key_to_bindings)
+            if handle_binding_collision_fn(
+                    binding_, binding_key_to_binding,
+                    collided_binding_key_to_bindings):
+                continue
         if binding_key in collided_binding_key_to_bindings:
             collided_binding_key_to_bindings[binding_key].add(binding_)
         else:
