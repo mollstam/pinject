@@ -36,6 +36,14 @@ Originally `ObjectGraph.provide(SomeClass)` is the only valid flavour
 (passing the binding name) to get an instance, this plays nicely with the extended
 singleton scope mentioned above.
 
+Allow explicit bindings to collide
+----------------------------------
+
+If an explicit binding gets repeated (e.g. in an inner BindingSpec) instead
+of raising a `ConflictingExplicitBindingsError` the first binding will simply remain.
+I use this to allow my tests' binding specs to override whatever inner app binding specs
+they desire, to mock selected functionality. :tada:
+
 Introduction
 ============
 
