@@ -95,3 +95,22 @@ class _InjectionContext(object):
     def get_injection_site_desc(self):
         """Returns a description of the current injection site."""
         return locations.get_name_and_loc(self._injection_site_fn)
+
+    def get_binding_stack_desc(self):
+        """Returns a description of the binding stack leading to current injection."""
+        desc = ''
+        bindings = []
+        to_visit = self._binding_stack[:]
+        while to_visit:
+          b = to_visit.pop(0)
+          arg = b.binding_key._name
+          target = b.get_binding_target_desc_fn()
+          if 'pinject.bindings.provide_it' in target and to_visit:
+            b = to_visit.pop(0)
+            target = b.get_binding_target_desc_fn()
+          bindings.append((arg, target))
+        indent = '\t'
+        for b in bindings:
+            desc += '\n{}{} as `{}`'.format(indent, b[1], b[0])
+            indent += '  '
+        return desc

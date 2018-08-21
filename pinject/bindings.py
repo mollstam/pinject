@@ -267,7 +267,7 @@ def new_binding_to_class(binding_key, to_class, in_scope, get_binding_loc_fn):
         return obj_provider.provide_class(
             to_class, injection_context, pargs, kwargs)
     def GetBindingTargetDesc():
-        return 'the class {0}'.format(locations.get_name_and_loc(to_class))
+        return 'the class {0} (at {1})'.format(to_class.__name__, locations.get_loc(to_class))
     return Binding(binding_key, Proviser, GetBindingTargetDesc, in_scope,
                    get_binding_loc_fn)
 

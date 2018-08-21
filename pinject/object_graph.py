@@ -245,7 +245,7 @@ class ObjectGraph(object):
         for binding_name in binding_names:
             injection_site = lambda: None
             injection_context = injection_contexts.InjectionContextFactory(
-                lambda _1, _2: True).new(lambda: None)
+                lambda _1, _2: True).new(self.provide)
             return self._obj_provider.provide_from_arg_binding_key(
                 injection_site, arg_binding_keys.new(binding_name), injection_context)
         raise errors.NothingInjectableForArgError(cls, 'in provide()')

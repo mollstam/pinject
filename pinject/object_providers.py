@@ -32,7 +32,7 @@ class ObjectProvider(object):
             self, injection_site_fn, arg_binding_key, injection_context):
         binding_key = arg_binding_key.binding_key
         binding = self._binding_mapping.get(
-            binding_key, injection_context.get_injection_site_desc())
+            binding_key, injection_context.get_binding_stack_desc())
         scope = self._bindable_scopes.get_sub_scope(binding)
         def Provide(*pargs, **kwargs):
             # TODO(kurts): probably capture back frame's file:line for
